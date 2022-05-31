@@ -18,10 +18,12 @@ pipeline {
             }
 
         }
-        stage('Build the Code') {
+        stage('Build the Code and sonarqube-analysis') {
             steps {
-                sh script: "mvn ${params.GOAL}"
-                stash name: 'spc-build-jar', includes: 'target/*.jar'
+                withSonarQubeEnv('SONAR_LATEST') {
+                    sh script: "mvn ${params.GOAL} sonar:sonar"
+                }
+
             }
         }
         stage('reporting') {
@@ -30,23 +32,15 @@ pipeline {
             }
 
         }
-        stage('deployment') {
-            agent { label 'JDK8' }
-            steps {
-                unstash name: 'spc-build-jar'
-                echo "clone the latest playbook"
-                sh 'ansible --version'
-            }
-        }
-    }
-    post {
-        success {
-            // send the success email
-            echo "Success"
-        }
-        unsuccessful {
-            //send the unsuccess email
-            echo "failure"
-        }
-    }
-}
+        
+//     post {
+//         success {
+//             // send the success email
+//             echo "Success"
+//         }
+//         unsuccessful {
+//             //send the unsuccess email
+//             echo "failure"
+//         }
+//     }
+ }
