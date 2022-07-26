@@ -1,0 +1,46 @@
+pipeline {
+    agent none
+    stages {
+        stage('Source Code') {
+            agent { label 'docker' && 'kubeclust' }
+            steps {
+                git url: 'git@github.com:ma1456/spring-petclinic.git, 
+                branch: 'master'
+            }
+        }
+        stage('build image using docker file') {
+            steps {
+                sh 'sudo docker image build -t spc .'
+            }
+        }
+        stage('push image to docker hub') {
+            steps {
+                withCredentials([string(credentialsId: 'dockerhubsec', variable: 'dockerhubsec')]) {
+                sh 'sudo docker login -u manojbalaraju -p ${dockerhubsec}'
+                }
+                sh 'docker image tag spc manojbalaraju/spc'
+                sh 'docker image push manojbalaraju/spc'
+            }
+        } 
+        stage('deploy to kubeclust') {
+            steps {
+                sh 'kubectl apply -f spcdeployservice.yaml' 
+            }
+        }
+        stage('deploy to production env') {
+            steps {
+                sh 'kubectl create deployment prod-pod --image=manojbalaraju/spc  -n=production --replicas=2'
+            }
+        }
+        stage('deploy to developer env') { 
+            steps {
+                sh 'kubectl create deployment dev-pod --image=manojbalaraju/spc  -n=developer --replicas=2'
+           }
+        }
+        stage('deploy to qa env') {
+            steps {
+                sh 'kubectl create deployment test-pod --image=manojbalaraju/spc  -n=qa --replicas=2'
+            }
+        }
+    }
+  }
