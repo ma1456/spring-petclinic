@@ -21,7 +21,7 @@ spc:
         - image: manojbalaraju/spc
           name: spc-deployment
       ports:
-        - containerPort: 80
+        - containerPort: 8080
 
 ---
 apiVersion: apps/v1
@@ -32,5 +32,6 @@ spc:
   selector: 
     app: spc
   ports:
-    - port: 80  
+    - port: 8080  
+  type: nodeport  
 
