@@ -10,7 +10,7 @@ pipeline {
         }
         stage('build image using docker file') {
             steps {
-                
+
                 sh 'sudo docker image build -t spc .'
             }
         }
@@ -25,7 +25,7 @@ pipeline {
         } 
         stage('deploy to kubeclust') {
             steps {
-                sh 'kubectl apply -f spcdeployservice.yaml' 
+                sh 'kubectl apply -f deployment-service-pod.yaml' 
             }
         }
         stage('deploy to production env') {
